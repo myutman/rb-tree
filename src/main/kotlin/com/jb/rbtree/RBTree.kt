@@ -119,6 +119,10 @@ class RBTree<T: Comparable<T>>: Set<T> {
             index++
         }
 
+        if (currentNode.color == Color.RED) {
+            currentNode = Node(currentNode.value, currentNode.left, currentNode.right, Color.BLACK)
+        }
+
         return RBTree(currentNode, size + 1)
     }
 
