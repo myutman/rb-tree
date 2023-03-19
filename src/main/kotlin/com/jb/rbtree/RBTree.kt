@@ -64,6 +64,10 @@ class RBTree<T: Comparable<T>>: Set<T> {
     }
 
     fun add(element: T): RBTree<T> {
+        if (root == null) {
+            return RBTree(Node(element, null, null, Color.BLACK), 1)
+        }
+
         if (contains(element)) {
             return this
         }
@@ -74,7 +78,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
         var currentNode = Node(element, null, null, Color.RED)
 
         var index = 0
-        while (index < path.size && currentNode.color != Color.RED) {
+        while (index < path.size && currentNode.color == Color.RED) {
             val oldNode = path[index]
             if (oldNode.color == Color.BLACK) {
                 break
@@ -118,6 +122,30 @@ class RBTree<T: Comparable<T>>: Set<T> {
         return RBTree(currentNode, size + 1)
     }
 
+    private fun rotateRight(
+        childL: Node?,
+        child: Node,
+        childR: Node?,
+        parent: Node,
+        parentR: Node?,
+        newColorLeft: Color,
+        newColorRight: Color
+    ): Node {
+        return Node(child.value, childL, Node(parent.value, childR, parentR, newColorRight), newColorLeft)
+    }
+
+    private fun rotateLeft(
+        parentL: Node?,
+        parent: Node,
+        childL: Node?,
+        child: Node,
+        childR: Node?,
+        newColorLeft: Color,
+        newColorRight: Color
+    ): Node {
+        return Node(child.value, Node(parent.value, parentL, childL, newColorLeft), childR, newColorRight)
+    }
+
     private fun makeBalanced(currentNode: Node, oldNode: Node, oldParent: Node, oldBrother: Node?): Node {
         if (oldBrother?.color?: Color.BLACK == Color.RED) {
             val newNode = if (currentNode.value < oldNode.value) {
@@ -132,7 +160,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
                 Node(oldParent.value, newBrother, newNode, if (oldParent == root) Color.BLACK else Color.RED)
             }
         } else {
-            return if (currentNode.value < oldNode.value && oldNode.value < currentNode.value) {
+            return if (currentNode.value < oldNode.value && oldNode.value < oldParent.value) {
                 /**
                  *           B
                  *         /  \
@@ -155,7 +183,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
                  *          d  e
                  */
                 Node(oldNode.value, currentNode, Node(oldParent.value, oldNode.right, oldBrother, Color.RED), Color.BLACK)
-            } else if (currentNode.value > oldNode.value && oldNode.value < currentNode.value) {
+            } else if (currentNode.value > oldNode.value && oldNode.value < oldParent.value) {
                 /**
                  *           B
                  *         /  \
@@ -179,7 +207,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
                  */
                 Node(currentNode.value, Node(oldNode.value, oldNode.left, currentNode.left, Color.RED), Node(oldParent.value, currentNode.right, oldBrother,
                     Color.RED), Color.BLACK)
-            } else if (currentNode.value > oldNode.value && oldNode.value > currentNode.value) {
+            } else if (currentNode.value > oldNode.value && oldNode.value > oldParent.value) {
                 /**
                  *           B
                  *         /  \
@@ -236,5 +264,41 @@ class RBTree<T: Comparable<T>>: Set<T> {
         }
 
         TODO("Not yet implemented")
+    }
+
+    private data class InvariantsStats<T: Comparable<T>>(val blacks: Int, val min: T?, val max: T?, val color: Color)
+
+    private fun getTreeInvariantsStatsDFS(node: Node?): InvariantsStats<T>? {
+        if (node == null) {
+            return InvariantsStats(
+                blacks = 1,
+                min = null,
+                max = null,
+                color = Color.BLACK
+            )
+        }
+        val statsLeft = getTreeInvariantsStatsDFS(node.left)
+        val statsRight = getTreeInvariantsStatsDFS(node.right)
+
+        return if (
+            statsLeft == null
+            || statsRight == null
+            || (statsLeft.max != null && statsLeft.max >= node.value)
+            || (statsRight.min != null && statsRight.min <= node.value)
+            || (node.color == Color.RED && (statsLeft.color == Color.RED || statsRight.color == Color.RED))
+            || (statsLeft.blacks != statsRight.blacks)
+        ) { null } else {
+            InvariantsStats(
+                blacks = statsLeft.blacks + if (node.color == Color.BLACK) 1 else 0,
+                min = statsLeft.min ?: node.value,
+                max = statsRight.max ?: node.value,
+                color = node.color
+            )
+        }
+    }
+
+    fun checkTreeInvariantsSatisfied(): Boolean {
+        val stats = getTreeInvariantsStatsDFS(root)
+        return (stats != null) && (stats.color == Color.BLACK)
     }
 }
