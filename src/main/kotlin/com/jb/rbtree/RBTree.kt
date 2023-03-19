@@ -104,7 +104,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
                 oldParent.left
             }
 
-            currentNode = makeBalanced(currentNode, oldNode, oldParent, oldBrother)
+            currentNode = makeBalancedAdd(currentNode, oldNode, oldParent, oldBrother)
 
             index += 2
         }
@@ -127,31 +127,25 @@ class RBTree<T: Comparable<T>>: Set<T> {
     }
 
     private fun rotateRight(
-        childL: Node?,
         child: Node,
-        childR: Node?,
         parent: Node,
-        parentR: Node?,
         newColorLeft: Color,
         newColorRight: Color
     ): Node {
-        return Node(child.value, childL, Node(parent.value, childR, parentR, newColorRight), newColorLeft)
+        return Node(child.value, child.left, Node(parent.value, child.right, parent.right, newColorRight), newColorLeft)
     }
 
     private fun rotateLeft(
-        parentL: Node?,
         parent: Node,
-        childL: Node?,
         child: Node,
-        childR: Node?,
         newColorLeft: Color,
         newColorRight: Color
     ): Node {
-        return Node(child.value, Node(parent.value, parentL, childL, newColorLeft), childR, newColorRight)
+        return Node(child.value, Node(parent.value, parent.left, child.left, newColorLeft), child.right, newColorRight)
     }
 
-    private fun makeBalanced(currentNode: Node, oldNode: Node, oldParent: Node, oldBrother: Node?): Node {
-        if (oldBrother?.color?: Color.BLACK == Color.RED) {
+    private fun makeBalancedAdd(currentNode: Node, oldNode: Node, oldParent: Node, oldBrother: Node?): Node {
+        if (oldBrother?.color?:Color.BLACK == Color.RED) {
             val newNode = if (currentNode.value < oldNode.value) {
                 Node(oldNode.value, currentNode, oldNode.right, Color.BLACK)
             } else {
@@ -161,103 +155,23 @@ class RBTree<T: Comparable<T>>: Set<T> {
             return if (newNode.value < oldParent.value) {
                 Node(oldParent.value, newNode, newBrother, Color.RED)
             } else {
-                Node(oldParent.value, newBrother, newNode, if (oldParent == root) Color.BLACK else Color.RED)
+                Node(oldParent.value, newBrother, newNode, Color.RED)
             }
         } else {
-            return if (currentNode.value < oldNode.value && oldNode.value < oldParent.value) {
-                /**
-                 *           B
-                 *         /  \
-                 *        A    C
-                 *       / \  / \
-                 *      X  g d  e
-                 *     / \
-                 *    a  b
-                 *
-                 *          |
-                 *          |
-                 *          v
-                 *
-                 *         A
-                 *       /  \
-                 *      X    B
-                 *     / \  / \
-                 *    a  b g  C
-                 *           / \
-                 *          d  e
-                 */
-                Node(oldNode.value, currentNode, Node(oldParent.value, oldNode.right, oldBrother, Color.RED), Color.BLACK)
-            } else if (currentNode.value > oldNode.value && oldNode.value < oldParent.value) {
-                /**
-                 *           B
-                 *         /  \
-                 *        A    C
-                 *       / \  / \
-                 *      a  X d  e
-                 *        / \
-                 *       b  g
-                 *
-                 *          |
-                 *          |
-                 *          v
-                 *
-                 *         X
-                 *       /  \
-                 *      A    B
-                 *     / \  / \
-                 *    a  b g  C
-                 *           / \
-                 *          d  e
-                 */
-                Node(currentNode.value, Node(oldNode.value, oldNode.left, currentNode.left, Color.RED), Node(oldParent.value, currentNode.right, oldBrother,
-                    Color.RED), Color.BLACK)
-            } else if (currentNode.value > oldNode.value && oldNode.value > oldParent.value) {
-                /**
-                 *           B
-                 *         /  \
-                 *        C    A
-                 *       / \  / \
-                 *      a  d e  X
-                 *             / \
-                 *            b  g
-                 *
-                 *          |
-                 *          |
-                 *          v
-                 *
-                 *           A
-                 *         /  \
-                 *        B    X
-                 *       / \  / \
-                 *      C  e b  g
-                 *     / \
-                 *    a  d
-                 */
-                Node(oldNode.value, Node(oldParent.value, oldBrother, oldNode.left, Color.RED), currentNode, Color.BLACK)
+            return if (oldNode.value < oldParent.value) {
+                val newNode = if (currentNode.value < oldNode.value) {
+                    Node(oldNode.value, currentNode, oldNode.right, oldNode.color)
+                } else {
+                    rotateLeft(oldNode, currentNode, oldNode.color, currentNode.color)
+                }
+                rotateRight(newNode, oldParent, Color.BLACK, Color.RED)
             } else {
-                /**
-                 *           B
-                 *         /  \
-                 *        C    A
-                 *       / \  / \
-                 *      a  d X  e
-                 *          / \
-                 *         b  g
-                 *
-                 *          |
-                 *          |
-                 *          v
-                 *
-                 *           X
-                 *         /  \
-                 *        B    A
-                 *       / \  / \
-                 *      C  b g  e
-                 *     / \
-                 *    a  d
-                 */
-                Node(currentNode.value, Node(oldParent.value, oldBrother, currentNode.left, Color.RED), Node(oldNode.value, currentNode.right, oldNode.right,
-                    Color.RED), Color.BLACK)
+                val newNode = if (currentNode.value > oldNode.value) {
+                    Node(oldNode.value, oldNode.left, currentNode, oldNode.color)
+                } else {
+                    rotateRight(currentNode, oldNode, currentNode.color, oldNode.color)
+                }
+                rotateLeft(oldParent, newNode, Color.RED, Color.BLACK)
             }
         }
     }
