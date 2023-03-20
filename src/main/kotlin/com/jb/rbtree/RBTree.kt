@@ -181,7 +181,131 @@ class RBTree<T: Comparable<T>>: Set<T> {
             return this
         }
 
-        TODO("Not yet implemented")
+        val path = findPath(element)
+        val deleted = path.removeLast()
+
+        if (deleted.left == null && deleted.right == null && deleted == root) {
+            return RBTree()
+        }
+
+        var (currentNode: Node?, balanceSpoilt: Boolean) = if (deleted.left == null) {
+            if (deleted.right == null) {
+                val oldNode = path.removeLast()
+                val newNode = if (oldNode.value < deleted.value) {
+                    Node(oldNode.value, oldNode.left, null, oldNode.color)
+                } else {
+                    Node(oldNode.value, null, oldNode.right, oldNode.color)
+                }
+                path.add(newNode)
+            }
+            Pair(deleted.right, deleted.color == Color.BLACK)
+        } else if (deleted.right == null) {
+            Pair(deleted.left, deleted.color == Color.BLACK)
+        } else {
+            val path1 = arrayListOf<Node>()
+            var node1: Node = deleted.right
+            while (node1.left != null) {
+                path1.add(node1)
+                node1 = node1.left!!
+            }
+            path.add(Node(node1.value, deleted.left, deleted.right, deleted.color))
+            path.addAll(path1)
+            if (node1.right == null) {
+                val oldNode = path.removeLast()
+                val newNode = if (oldNode.value <= node1.value) { /* == happens when it's exactly right son, so still this branch */
+                    Node(oldNode.value, oldNode.left, null, oldNode.color)
+                } else {
+                    Node(oldNode.value, null, oldNode.right, oldNode.color)
+                }
+                path.add(newNode)
+            }
+            Pair(node1.right, node1.color == Color.BLACK)
+        }
+
+        while (balanceSpoilt && currentNode?.color != Color.RED && !path.isEmpty()) {
+            val oldNode = path.removeLast()
+            val oldBrother: Node = if ((currentNode == null && oldNode.right == null)
+                || (currentNode != null && oldNode.value < currentNode.value)) {
+                oldNode.left
+            } else {
+                oldNode.right
+            }!! /* Should be not null due to invariant */
+
+            if (oldBrother.color == Color.RED) {
+                val newParent = if (oldBrother.value > oldNode.value) {
+                    rotateLeft(oldNode, oldBrother, Color.RED, Color.BLACK)
+                } else {
+                    rotateRight(oldBrother, oldNode, Color.BLACK, Color.RED)
+                }
+
+                val newNode = if (oldBrother.value > oldNode.value) {
+                    newParent.left
+                } else {
+                    newParent.right
+                }!! /* Should be not null due to invariant */
+                path.add(newParent)
+                path.add(newNode)
+            } else {
+                if (oldBrother.left?.color?:Color.BLACK == Color.BLACK && oldBrother.right?.color?:Color.BLACK == Color.BLACK) {
+                    if (oldNode.color == Color.RED) {
+                        balanceSpoilt = false
+                    }
+                    currentNode = if (oldBrother.value > oldNode.value) {
+                        Node(oldNode.value, currentNode, Node(oldBrother.value, oldBrother.left, oldBrother.right, Color.RED), Color.BLACK)
+                    } else {
+                        Node(oldNode.value, Node(oldBrother.value, oldBrother.left, oldBrother.right, Color.RED), currentNode, Color.BLACK)
+                    }
+                } else if (oldBrother.value > oldNode.value) {
+                    val newBrother = if (oldBrother.left?.color == Color.RED) {
+                        rotateRight(oldBrother.left, oldBrother, Color.BLACK, Color.BLACK)
+                    } else {
+                        Node(
+                            oldBrother.value,
+                            oldBrother.left,
+                            Node(oldBrother.right!!.value, oldBrother.right.left, oldBrother.right.right, Color.BLACK),
+                            Color.BLACK
+                        )
+                    }
+                    val newNode = Node(oldNode.value, currentNode, newBrother, oldNode.color)
+                    currentNode = rotateLeft(newNode, newBrother, Color.BLACK, oldNode.color)
+                    balanceSpoilt = false
+                } else {
+                    val newBrother = if (oldBrother.right?.color == Color.RED) {
+                        rotateLeft(oldBrother, oldBrother.right, Color.BLACK, Color.BLACK)
+                    } else {
+                        Node(
+                            oldBrother.value,
+                            Node(oldBrother.left!!.value, oldBrother.left.left, oldBrother.left.right, Color.BLACK),
+                            oldBrother.right,
+                            Color.BLACK
+                        )
+                    }
+                    val newNode = Node(oldNode.value, newBrother, currentNode, oldNode.color)
+                    currentNode = rotateRight(newBrother, newNode, oldNode.color, Color.BLACK)
+                    balanceSpoilt = false
+                }
+            }
+        }
+
+        if (balanceSpoilt && currentNode?.color == Color.RED) {
+            currentNode = Node(currentNode.value, currentNode.left, currentNode.right, Color.BLACK)
+        }
+
+        while (!path.isEmpty()) {
+            val oldNode = path.removeLast()
+            currentNode = if ((currentNode == null && oldNode.left == null)
+                || (currentNode != null && oldNode.value > currentNode.value)) {
+                Node(oldNode.value, currentNode, oldNode.right, oldNode.color)
+            } else {
+                Node(oldNode.value, oldNode.left, currentNode, oldNode.color)
+            }
+        }
+
+        if (currentNode?.color == Color.RED) {
+            currentNode = Node(currentNode.value, currentNode.left, currentNode.right, Color.BLACK)
+        }
+
+        return RBTree(currentNode!!, size - 1)
     }
 
     private data class InvariantsStats<T: Comparable<T>>(val blacks: Int, val min: T?, val max: T?, val color: Color)
