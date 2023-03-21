@@ -1,6 +1,6 @@
 package com.jb.rbtree
 
-class RBTreeSet<T: Comparable<T>>(private var state: RBTree<T> = RBTree()): MutableSet<T> {
+class RBTreeSet<T : Comparable<T>>(private var state: RBTree<T> = RBTree()) : MutableSet<T> {
 
     constructor(elements: Collection<T>) : this() {
         addAll(elements)

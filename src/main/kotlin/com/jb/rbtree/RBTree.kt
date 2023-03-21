@@ -1,6 +1,6 @@
 package com.jb.rbtree
 
-class RBTree<T: Comparable<T>>: Set<T> {
+class RBTree<T : Comparable<T>> : Set<T> {
 
     constructor() {
         root = null
@@ -145,7 +145,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
     }
 
     private fun makeBalancedAdd(currentNode: Node, oldNode: Node, oldParent: Node, oldBrother: Node?): Node {
-        if (oldBrother?.color?:Color.BLACK == Color.RED) {
+        if (oldBrother?.color ?: Color.BLACK == Color.RED) {
             val newNode = if (currentNode.value < oldNode.value) {
                 Node(oldNode.value, currentNode, oldNode.right, Color.BLACK)
             } else {
@@ -212,11 +212,12 @@ class RBTree<T: Comparable<T>>: Set<T> {
             path.addAll(path1)
             if (node1.right == null) {
                 val oldNode = path.removeLast()
-                val newNode = if (oldNode.value <= node1.value) { /* == happens when it's exactly right son, so still this branch */
-                    Node(oldNode.value, oldNode.left, null, oldNode.color)
-                } else {
-                    Node(oldNode.value, null, oldNode.right, oldNode.color)
-                }
+                val newNode =
+                    if (oldNode.value <= node1.value) { /* == happens when it's exactly right son, so still this branch */
+                        Node(oldNode.value, oldNode.left, null, oldNode.color)
+                    } else {
+                        Node(oldNode.value, null, oldNode.right, oldNode.color)
+                    }
                 path.add(newNode)
             }
             Pair(node1.right, node1.color == Color.BLACK)
@@ -225,7 +226,8 @@ class RBTree<T: Comparable<T>>: Set<T> {
         while (balanceSpoilt && currentNode?.color != Color.RED && !path.isEmpty()) {
             val oldNode = path.removeLast()
             val oldBrother: Node = if ((currentNode == null && oldNode.right == null)
-                || (currentNode != null && oldNode.value < currentNode.value)) {
+                || (currentNode != null && oldNode.value < currentNode.value)
+            ) {
                 oldNode.left
             } else {
                 oldNode.right
@@ -246,14 +248,24 @@ class RBTree<T: Comparable<T>>: Set<T> {
                 path.add(newParent)
                 path.add(newNode)
             } else {
-                if (oldBrother.left?.color?:Color.BLACK == Color.BLACK && oldBrother.right?.color?:Color.BLACK == Color.BLACK) {
+                if (oldBrother.left?.color ?: Color.BLACK == Color.BLACK && oldBrother.right?.color ?: Color.BLACK == Color.BLACK) {
                     if (oldNode.color == Color.RED) {
                         balanceSpoilt = false
                     }
                     currentNode = if (oldBrother.value > oldNode.value) {
-                        Node(oldNode.value, currentNode, Node(oldBrother.value, oldBrother.left, oldBrother.right, Color.RED), Color.BLACK)
+                        Node(
+                            oldNode.value,
+                            currentNode,
+                            Node(oldBrother.value, oldBrother.left, oldBrother.right, Color.RED),
+                            Color.BLACK
+                        )
                     } else {
-                        Node(oldNode.value, Node(oldBrother.value, oldBrother.left, oldBrother.right, Color.RED), currentNode, Color.BLACK)
+                        Node(
+                            oldNode.value,
+                            Node(oldBrother.value, oldBrother.left, oldBrother.right, Color.RED),
+                            currentNode,
+                            Color.BLACK
+                        )
                     }
                 } else if (oldBrother.value > oldNode.value) {
                     val newBrother = if (oldBrother.left?.color == Color.RED) {
@@ -294,7 +306,8 @@ class RBTree<T: Comparable<T>>: Set<T> {
         while (!path.isEmpty()) {
             val oldNode = path.removeLast()
             currentNode = if ((currentNode == null && oldNode.left == null)
-                || (currentNode != null && oldNode.value > currentNode.value)) {
+                || (currentNode != null && oldNode.value > currentNode.value)
+            ) {
                 Node(oldNode.value, currentNode, oldNode.right, oldNode.color)
             } else {
                 Node(oldNode.value, oldNode.left, currentNode, oldNode.color)
@@ -308,7 +321,7 @@ class RBTree<T: Comparable<T>>: Set<T> {
         return RBTree(currentNode!!, size - 1)
     }
 
-    private data class InvariantsStats<T: Comparable<T>>(val blacks: Int, val min: T?, val max: T?, val color: Color)
+    private data class InvariantsStats<T : Comparable<T>>(val blacks: Int, val min: T?, val max: T?, val color: Color)
 
     private fun getTreeInvariantsStatsDFS(node: Node?): InvariantsStats<T>? {
         if (node == null) {
@@ -329,7 +342,9 @@ class RBTree<T: Comparable<T>>: Set<T> {
             || (statsRight.min != null && statsRight.min <= node.value)
             || (node.color == Color.RED && (statsLeft.color == Color.RED || statsRight.color == Color.RED))
             || (statsLeft.blacks != statsRight.blacks)
-        ) { null } else {
+        ) {
+            null
+        } else {
             InvariantsStats(
                 blacks = statsLeft.blacks + if (node.color == Color.BLACK) 1 else 0,
                 min = statsLeft.min ?: node.value,

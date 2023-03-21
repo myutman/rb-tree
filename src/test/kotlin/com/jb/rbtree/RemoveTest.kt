@@ -1,10 +1,7 @@
 package com.jb.rbtree
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.lang.NullPointerException
-import java.lang.RuntimeException
 import kotlin.random.Random
 
 class RemoveTest {
@@ -34,7 +31,7 @@ class RemoveTest {
 
         val set = mutableSetOf<Int>()
         for (i in 0..999) {
-            val value = randomizer.nextInt(from=-1000, until=999)
+            val value = randomizer.nextInt(from = -1000, until = 999)
             tree = tree.add(value)
             set.add(value)
         }
@@ -42,7 +39,7 @@ class RemoveTest {
         assertTrue(tree.containsAll(set))
 
         for (i in 0..999) {
-            val value = randomizer.nextInt(from=-1000, until=999)
+            val value = randomizer.nextInt(from = -1000, until = 999)
             try {
                 tree = tree.remove(value)
             } catch (e: NullPointerException) {
@@ -56,7 +53,7 @@ class RemoveTest {
         assertTrue(tree.containsAll(set))
 
         for (i in 0..999) {
-            val value = randomizer.nextInt(from=-1000, until=999)
+            val value = randomizer.nextInt(from = -1000, until = 999)
             assertEquals(tree.contains(value), set.contains(value))
         }
 
