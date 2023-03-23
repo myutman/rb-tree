@@ -1,6 +1,6 @@
 package com.jb.rbtree
 
-class RBTree<T : Comparable<T>> : Set<T> {
+internal class RBTree<T : Comparable<T>> : Set<T> {
 
     constructor() {
         root = null
@@ -73,30 +73,26 @@ class RBTree<T : Comparable<T>> : Set<T> {
         }
 
         val path = findPath(element)
-        path.reverse()
 
         var currentNode = Node(element, null, null, Color.RED)
 
-        var index = 0
-        while (index < path.size && currentNode.color == Color.RED) {
-            val oldNode = path[index]
+        while (path.isNotEmpty() && currentNode.color == Color.RED) {
+            val oldNode = path.removeLast()
             if (oldNode.color == Color.BLACK) {
+                path.add(oldNode)
                 break
             }
 
-            if (index + 1 == path.size) {
-                val newNode = if (currentNode.value < oldNode.value) {
+            if (path.isEmpty()) {
+                currentNode = if (currentNode.value < oldNode.value) {
                     Node(oldNode.value, currentNode, oldNode.right, Color.BLACK)
                 } else {
                     Node(oldNode.value, oldNode.left, currentNode, Color.BLACK)
                 }
-                currentNode = newNode
-                index++
                 break
             }
 
-            val oldParent = path[index + 1]
-
+            val oldParent = path.removeLast()
 
             val oldBrother = if (oldNode.value < oldParent.value) {
                 oldParent.right
@@ -105,18 +101,15 @@ class RBTree<T : Comparable<T>> : Set<T> {
             }
 
             currentNode = makeBalancedAdd(currentNode, oldNode, oldParent, oldBrother)
-
-            index += 2
         }
 
-        while (index < path.size) {
-            val oldNode = path[index]
+        while (path.isNotEmpty()) {
+            val oldNode = path.removeLast()
             currentNode = if (currentNode.value < oldNode.value) {
                 Node(oldNode.value, currentNode, oldNode.right, oldNode.color)
             } else {
                 Node(oldNode.value, oldNode.left, currentNode, oldNode.color)
             }
-            index++
         }
 
         if (currentNode.color == Color.RED) {

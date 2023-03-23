@@ -70,7 +70,7 @@ class RBTreeSetBlocking<T : Comparable<T>> : MutableSet<T> {
             val oldState = state
             state = RBTree()
 
-            elements.filter { oldState.contains(it) }. forEach {
+            elements.filter { oldState.contains(it) }.forEach {
                 state = state.add(it)
             }
             changed = elements.size != state.size
