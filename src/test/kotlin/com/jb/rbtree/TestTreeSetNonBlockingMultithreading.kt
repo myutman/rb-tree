@@ -5,11 +5,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
-class TestTreeSetBlockingMultithreading {
+class TestTreeSetNonBlockingMultithreading {
 
     @Test
     fun testAdd() {
-        val set = RBTreeSetBlocking<Int>()
+        val set = RBTreeSetNonBlocking<Int>()
 
         runBlocking {
             repeat(100) { i ->
@@ -26,7 +26,7 @@ class TestTreeSetBlockingMultithreading {
 
     @Test
     fun testRemove() {
-        val set = RBTreeSetBlocking<Int>()
+        val set = RBTreeSetNonBlocking<Int>()
 
         set.addAll(0..99999)
 

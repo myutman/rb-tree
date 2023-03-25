@@ -2,7 +2,7 @@ package com.jb.rbtree
 
 import java.util.concurrent.atomic.AtomicReference
 
-class RBTreeSetNonBlocking<T : Comparable<T>> : MutableSet<T> {
+class RBTreeSetNonBlocking<T : Comparable<T>> : PersistentSet<T> {
     private val state: AtomicReference<RBTree<T>>
 
     constructor() {
@@ -92,14 +92,14 @@ class RBTreeSetNonBlocking<T : Comparable<T>> : MutableSet<T> {
 
     override fun containsAll(elements: Collection<T>): Boolean {
         val oldState = state.get()
-        return elements.filter { oldState.contains(it) }.any()
+        return elements.all { oldState.contains(it) }
     }
 
     override fun isEmpty(): Boolean {
         return state.get().isEmpty()
     }
 
-    fun clone(): RBTreeSetNonBlocking<T> {
+    override fun clone(): RBTreeSetNonBlocking<T> {
         return RBTreeSetNonBlocking(state.get())
     }
 }

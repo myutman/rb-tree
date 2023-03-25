@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 
-class RemoveTest {
+class TestRemove {
     @Test
     fun checkRemoveNonPersistent() {
         var tree = RBTree<Int>()

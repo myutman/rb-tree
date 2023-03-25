@@ -1,6 +1,6 @@
 package com.jb.rbtree
 
-class RBTreeSetBlocking<T : Comparable<T>> : MutableSet<T> {
+class RBTreeSetBlocking<T : Comparable<T>> : PersistentSet<T> {
     private var state: RBTree<T>
 
     constructor() {
@@ -87,14 +87,14 @@ class RBTreeSetBlocking<T : Comparable<T>> : MutableSet<T> {
 
     override fun containsAll(elements: Collection<T>): Boolean {
         val oldState = state
-        return elements.filter { oldState.contains(it) }.any()
+        return elements.all { oldState.contains(it) }
     }
 
     override fun isEmpty(): Boolean {
         return state.isEmpty()
     }
 
-    fun clone(): RBTreeSetBlocking<T> {
+    override fun clone(): RBTreeSetBlocking<T> {
         return RBTreeSetBlocking(state)
     }
 }
