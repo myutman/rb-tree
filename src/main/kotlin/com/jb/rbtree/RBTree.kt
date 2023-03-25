@@ -15,6 +15,17 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
     private enum class Color { BLACK, RED }
     private inner class Node(val value: T, val left: Node?, val right: Node?, val color: Color)
 
+    private inner class RBTreeIterator: Iterator<T> {
+        override fun hasNext(): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun next(): T {
+            TODO("Not yet implemented")
+        }
+
+    }
+
     private val root: Node?
 
     override val size: Int
@@ -138,7 +149,7 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
     }
 
     private fun makeBalancedAdd(currentNode: Node, oldNode: Node, oldParent: Node, oldBrother: Node?): Node {
-        if (oldBrother?.color ?: Color.BLACK == Color.RED) {
+        if ((oldBrother?.color ?: Color.BLACK) == Color.RED) {
             val newNode = if (currentNode.value < oldNode.value) {
                 Node(oldNode.value, currentNode, oldNode.right, Color.BLACK)
             } else {
@@ -241,7 +252,9 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
                 path.add(newParent)
                 path.add(newNode)
             } else {
-                if (oldBrother.left?.color ?: Color.BLACK == Color.BLACK && oldBrother.right?.color ?: Color.BLACK == Color.BLACK) {
+                if ((oldBrother.left?.color ?: Color.BLACK) == Color.BLACK && (oldBrother.right?.color
+                        ?: Color.BLACK) == Color.BLACK
+                ) {
                     if (oldNode.color == Color.RED) {
                         balanceSpoilt = false
                     }
