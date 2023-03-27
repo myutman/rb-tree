@@ -1,6 +1,6 @@
 package com.jb.rbtree
 
-interface PersistentSet<T>: Set<T> {
+interface PersistentSet<T> : Set<T> {
     fun clone(): PersistentSet<T>
     fun clear()
     fun add(element: T): Boolean
