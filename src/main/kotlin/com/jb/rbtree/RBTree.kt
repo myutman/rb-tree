@@ -15,7 +15,7 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
     private enum class Color { BLACK, RED }
     private inner class Node(val value: T, val left: Node?, val right: Node?, val color: Color)
 
-    private inner class RBTreeIterator: Iterator<T> {
+    private inner class RBTreeIterator : Iterator<T> {
         private val pathToRoot: ArrayList<Node> = arrayListOf()
         var isNew: Boolean = true
 
