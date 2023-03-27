@@ -32,7 +32,7 @@ class TestTreeSetNonBlocking {
         val set = RBTreeSetNonBlocking<Int>()
         val elements = mutableSetOf<Int>()
 
-        set.addAll(-100000..100000)
+        set.addAll((-100000..100000).toList())
         elements.addAll(-100000..100000)
 
         val random = Random(339264239)

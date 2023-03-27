@@ -40,8 +40,8 @@ class RBTreeSetNonBlocking<T : Comparable<T>> : PersistentSet<T> {
         state.set(RBTree())
     }
 
-    override fun iterator(): MutableIterator<T> {
-        TODO("Not yet implemented")
+    override fun iterator(): Iterator<T> {
+        return state.get().iterator()
     }
 
     override fun remove(element: T): Boolean {

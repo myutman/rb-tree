@@ -37,8 +37,8 @@ class RBTreeSetBlocking<T : Comparable<T>> : PersistentSet<T> {
         state = RBTree()
     }
 
-    override fun iterator(): MutableIterator<T> {
-        TODO("Not yet implemented")
+    override fun iterator(): Iterator<T> {
+        return state.iterator()
     }
 
     override fun remove(element: T): Boolean {

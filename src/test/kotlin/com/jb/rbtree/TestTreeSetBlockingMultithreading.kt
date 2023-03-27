@@ -28,7 +28,7 @@ class TestTreeSetBlockingMultithreading {
     fun testRemove() {
         val set = RBTreeSetBlocking<Int>()
 
-        set.addAll(0..99999)
+        set.addAll((0..99999).toList())
 
         assertTrue { set.containsAll((0..99999).toList()) }
 

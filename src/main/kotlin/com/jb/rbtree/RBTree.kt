@@ -16,14 +16,47 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
     private inner class Node(val value: T, val left: Node?, val right: Node?, val color: Color)
 
     private inner class RBTreeIterator: Iterator<T> {
+        private val pathToRoot: ArrayList<Node> = arrayListOf()
+        var isNew: Boolean = true
+
         override fun hasNext(): Boolean {
-            TODO("Not yet implemented")
+            if (root == null) return false
+            if (pathToRoot.isEmpty()) return isNew
+            if (pathToRoot.last().right != null) return true
+            for (index in (1..pathToRoot.size - 1).reversed()) {
+                if (pathToRoot[index].value < pathToRoot[index - 1].value) return true
+            }
+            return false
         }
 
         override fun next(): T {
-            TODO("Not yet implemented")
-        }
+            if (root == null) throw NoSuchElementException()
+            var lastChildIsRight = true
+            if (pathToRoot.isNotEmpty() && pathToRoot.last().right == null) {
+                while (pathToRoot.isNotEmpty() && lastChildIsRight) {
+                    val removed = pathToRoot.removeLast()
+                    lastChildIsRight = pathToRoot.isEmpty() || removed.value > pathToRoot.last().value
+                }
+            }
+            if (!lastChildIsRight) {
+                return pathToRoot.last().value
+            }
+            if (pathToRoot.isEmpty()) {
+                if (isNew) {
+                    isNew = false
+                    pathToRoot.add(root)
+                } else {
+                    throw NoSuchElementException()
+                }
+            } else {
+                pathToRoot.add(pathToRoot.last().right!!)
+            }
 
+            while (pathToRoot.last().left != null) {
+                pathToRoot.add(pathToRoot.last().left!!)
+            }
+            return pathToRoot.last().value
+        }
     }
 
     private val root: Node?
@@ -45,7 +78,7 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
     }
 
     override fun iterator(): Iterator<T> {
-        TODO("Not yet implemented")
+        return RBTreeIterator()
     }
 
     override fun containsAll(elements: Collection<T>): Boolean {
