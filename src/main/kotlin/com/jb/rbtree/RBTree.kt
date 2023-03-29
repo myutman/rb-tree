@@ -127,6 +127,9 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
                 break
             }
 
+            /**
+             * Should actually never been called because root is never red
+             */
             if (path.isEmpty()) {
                 currentNode = if (currentNode.value < oldNode.value) {
                     Node(oldNode.value, currentNode, oldNode.right, Color.BLACK)
