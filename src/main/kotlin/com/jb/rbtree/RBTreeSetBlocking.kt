@@ -1,5 +1,12 @@
 package com.jb.rbtree
 
+/**
+ * Blocking thread-safe implementation of red-black tree that implements [PersistentSet]. It supports iteration over
+ * elements in the ascendant order
+ *
+ * @param T the type with full order relation of elements contained in the set. The set is covariant in its element type.
+ * @constructor Create empty set
+ */
 class RBTreeSetBlocking<T : Comparable<T>> : PersistentSet<T> {
     private var state: RBTree<T>
 
@@ -37,6 +44,9 @@ class RBTreeSetBlocking<T : Comparable<T>> : PersistentSet<T> {
         state = RBTree()
     }
 
+    /**
+     * Iterator over the elements of a current state of the set in the ascending order
+     */
     override fun iterator(): Iterator<T> {
         return state.iterator()
     }
