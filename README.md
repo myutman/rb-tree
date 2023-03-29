@@ -1,5 +1,58 @@
 # Implementation of persistent red-black tree
 
+## Example
+
+```kotlin
+val setBlocking = RBTreeSetBlocking<Int>()
+
+setBlocking.addAll((0..99999).toList())
+val setsBlocking = (0..99).map { setBlocking.clone() }.toList()
+
+runBlocking {
+    repeat(100) { i ->
+        launch {
+            setsBlocking[i].retainAll((1000 * i..1000 * i + 999).toList())
+        }
+    }
+}
+
+
+
+val setNonBlocking = RBTreeSetNonBlocking<Int>()
+
+setNonBlocking.addAll((0..99999).toList())
+val setsNonBlocking = (0..99).map { setNonBlocking.clone() }.toList()
+
+runBlocking {
+    repeat(100) { i ->
+        launch {
+            setsNonBlocking[i].retainAll((1000 * i..1000 * i + 999).toList())
+        }
+    }
+}
+```
+
+## Interface
+
+### Persistent set
+This project provides the interface of ```PersistentSet<T>``` which is basically an immutable set (it actually implements interface ```Set```) with additional modification methods. It's not actually a mutable set because each modification creates a brand new state. However this interface provides a fast cloning operation.
+
+So, the set of methods is as follows:
+* ```.contains()```, ```.containsAll()```, ```.size``` and ```.isEmpty()``` are the same as in ```Set```. Check them out <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/">here</a>.
+* ```.add()``` adds the specified element to this instance of a collection.
+* ```.addAll()``` adds all the elements of the specified collection to this instance of a collection.
+* ```.remove()``` removes a single instance of the specified element from this instance of a collection, if it is present.
+* ```.removeAll()``` removes all of this collection's instance's elements that are also contained in the specified collection.
+* ```.retainAll()``` retains only the elements in this instance of a collection that are contained in the specified collection.
+* ```.clear()``` removes all elements from this instance of a collection.
+* ```.clone()``` clones the collection as a new instance.
+
+### RBTreeSetBlocking
+Thread-safe implementation of ```PersistentSet``` in blocking style using mutex. Additionally it supports an iterator over elements in the ascending order by a comparator in the ```.iterator()``` method, because it's based on red-black tree.
+
+### RBTreeSetNonBlocking
+Thread-safe implementation of ```PersistentSet``` in non-blocking style using ```AtomicReference``` and ```.compareAndSet()``` method. It also supports an iterator over elements in the ascending order by a comparator in the ```.iterator()``` method, because it's also based on red-black tree.
+
 ## Algorithm
 
 ### Non-persistent
