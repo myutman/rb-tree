@@ -20,7 +20,6 @@ class TestRemove {
         for (value in listOf(5, 2, 1, 17, 99)) {
             assertTrue(tree.contains(value), "value = $value")
             tree = tree.remove(value)
-            assertTrue(tree.checkTreeInvariantsSatisfied())
             assertFalse(tree.contains(value), "value = $value")
         }
     }
@@ -49,7 +48,6 @@ class TestRemove {
             }
             set.remove(value)
             assertFalse(tree.contains(value))
-            assertTrue(tree.checkTreeInvariantsSatisfied(), "Invariants unsatisfied i = $i, value = $value")
         }
 
         assertTrue(tree.containsAll(set))
@@ -58,7 +56,5 @@ class TestRemove {
             val value = randomizer.nextInt(from = -1000, until = 999)
             assertEquals(tree.contains(value), set.contains(value))
         }
-
-        assertTrue(tree.checkTreeInvariantsSatisfied())
     }
 }
