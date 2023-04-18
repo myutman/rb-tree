@@ -41,7 +41,9 @@ class RBTreeSetBlocking<T : Comparable<T>> : PersistentSet<T> {
     }
 
     override fun clear() {
-        state = RBTree()
+        synchronized(state) {
+            state = RBTree()
+        }
     }
 
     /**

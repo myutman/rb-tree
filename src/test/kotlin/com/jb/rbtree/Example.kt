@@ -21,7 +21,6 @@ class Example {
         }
 
 
-
         val setNonBlocking = RBTreeSetNonBlocking<Int>()
 
         setNonBlocking.addAll((0..99999).toList())

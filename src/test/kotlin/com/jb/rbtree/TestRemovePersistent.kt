@@ -3,7 +3,6 @@ package com.jb.rbtree
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class TestRemovePersistent {
     @Test
@@ -26,7 +25,6 @@ class TestRemovePersistent {
             val index = randomizer.nextInt(from = 0, until = trees.size)
             val value = randomizer.nextInt(-1000, 1000)
             trees.add(trees[index].remove(value))
-            assertTrue(trees.last().checkTreeInvariantsSatisfied(), "iteration $i, added value $value")
             val newSet = sets[index].toMutableSet()
             newSet.remove(value)
             sets.add(newSet.toSet())
@@ -59,7 +57,6 @@ class TestRemovePersistent {
             val index = randomizer.nextInt(from = 0, until = trees.size)
             val value = randomizer.nextInt(-1000, 1000).toString()
             trees.add(trees[index].remove(value))
-            assertTrue(trees.last().checkTreeInvariantsSatisfied(), "iteration $i, added value $value")
             val newSet = sets[index].toMutableSet()
             newSet.remove(value)
             sets.add(newSet.toSet())

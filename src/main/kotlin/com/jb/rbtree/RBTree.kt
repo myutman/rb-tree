@@ -13,7 +13,24 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
     }
 
     private enum class Color { BLACK, RED }
-    private inner class Node(val value: T, val left: Node?, val right: Node?, val color: Color)
+    private inner class Node(val value: T, val left: Node?, val right: Node?, val color: Color) {
+        private val blackDepth: Int =
+            minOf(left?.blackDepth ?: 1, right?.blackDepth ?: 1) + if (color == Color.BLACK) 1 else 0
+        private val min: T = left?.min ?: value
+        private val max: T = right?.max ?: value
+
+        fun checkInvariant(messagePrefix: String = "") {
+            assert(left == null || left.max < value) { "$messagePrefix: Values of left subtree must be smaller than the top value" }
+            assert(right == null || right.min > value) { "$messagePrefix: Values of right subtree must be bigger than the node's value" }
+            assert(
+                (left?.blackDepth ?: 1) == (right?.blackDepth ?: 1)
+            ) { "$messagePrefix: The black depth of left and right subtrees should be equal" }
+            assert(
+                color == Color.BLACK || (((left?.color ?: Color.BLACK) == Color.BLACK) && ((right?.color
+                    ?: Color.BLACK) == Color.BLACK))
+            ) { "$messagePrefix: The red node is not allowed to have red children" }
+        }
+    }
 
     private inner class RBTreeIterator : Iterator<T> {
         private val pathToRoot: ArrayList<Node> = arrayListOf()
@@ -23,7 +40,7 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
             if (root == null) return false
             if (pathToRoot.isEmpty()) return isNew
             if (pathToRoot.last().right != null) return true
-            for (index in (1..pathToRoot.size - 1).reversed()) {
+            for (index in (1 until pathToRoot.size).reversed()) {
                 if (pathToRoot[index].value < pathToRoot[index - 1].value) return true
             }
             return false
@@ -206,22 +223,23 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
                 break
             }
 
-            /**
-             * Should actually never been called because root is never red
-             */
-            if (path.isEmpty()) {
-                currentNode = makeParent(oldNode, currentNode, Color.BLACK)
-                break
-            }
+            assert(path.isNotEmpty()) { "Root's color should be black" }
 
             val oldParent = path.removeLast()
             val oldBrother = getBrother(oldParent, oldNode)
             currentNode = makeBalancedAdd(currentNode, oldNode, oldParent, oldBrother)
+            // After every iteration subtree of the currentNode must satisfy RB-tree invariants
+            currentNode.checkInvariant("In RBTree.add($element), currentNode=$currentNode")
+            // Also checking invariant for children. The descendants of next levels stay intact during this iteration.
+            currentNode.left?.checkInvariant("In RBTree.add($element), currentNode=$currentNode left child")
+            currentNode.right?.checkInvariant("In RBTree.add($element), currentNode=$currentNode right child")
         }
 
         while (path.isNotEmpty()) {
             val oldNode = path.removeLast()
             currentNode = makeParent(oldNode, currentNode)
+            // After every iteration subtree of the currentNode must satisfy RB-tree invariants
+            currentNode.checkInvariant("In RBTree.add($element), currentNode=$currentNode")
         }
         currentNode = cloneUpdateColor(currentNode, Color.BLACK)
 
@@ -267,20 +285,27 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
         }
         var balanceSpoilt = (deleted.color == Color.BLACK)
 
-        while (balanceSpoilt && currentNode?.color != Color.RED && !path.isEmpty()) {
+        while (balanceSpoilt && currentNode?.color != Color.RED && path.isNotEmpty()) {
             val oldNode = path.removeLast()
-            val oldBrother: Node = getBrother(oldNode, currentNode)!! /* Should be not null due to invariant */
+            val oldBrother =
+                getBrother(oldNode, currentNode)
+                    ?: throw AssertionError("In RBTree.remove($element): Black depth of the other subtree should be bigger by 1")
 
             if (oldBrother.color == Color.RED) {
                 val newParent = rotate(oldNode, oldBrother, Color.BLACK, Color.RED)
-                val newNode =
-                    getBrother(newParent, getBrother(newParent, oldNode))!! /* Should be not null due to invariant */
+                val newNode = getBrother(newParent, getBrother(newParent, oldNode))
+                    ?: throw AssertionError("In RBTree.remove($element): Shouldn't be null because it's copy of non-null oldNode instance")
                 path.add(newParent)
                 path.add(newNode)
             } else {
                 val (balanceFixed, newNode) = makeBalancedRemove(oldBrother, oldNode, currentNode)
                 balanceSpoilt = !balanceFixed
                 currentNode = newNode
+                // After every iteration subtree of the currentNode must satisfy RB-tree invariants
+                currentNode.checkInvariant("In RBTree.remove($element), currentNode=$currentNode")
+                // Also checking invariant for children. The descendants of next levels stay intact during this iteration.
+                currentNode.left?.checkInvariant("In RBTree.remove($element), currentNode=$currentNode left child")
+                currentNode.right?.checkInvariant("In RBTree.remove($element), currentNode=$currentNode right child")
             }
         }
 
@@ -291,13 +316,15 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
         while (!path.isEmpty()) {
             val oldNode = path.removeLast()
             currentNode = makeParent(oldNode, currentNode)
+            // After every iteration subtree of currentNode must satisfy RB-tree invariants
+            currentNode.checkInvariant("In RBTree.remove($element), currentNode=$currentNode")
         }
         currentNode = cloneUpdateColor(currentNode!!, Color.BLACK)
 
         return RBTree(currentNode, size - 1)
     }
 
-    private fun makeBalancedRemove(oldBrother: Node, oldNode: Node, currentNode: Node?): Pair<Boolean, Node?> {
+    private fun makeBalancedRemove(oldBrother: Node, oldNode: Node, currentNode: Node?): Pair<Boolean, Node> {
         return if ((oldBrother.left?.color ?: Color.BLACK) == Color.BLACK && (oldBrother.right?.color
                 ?: Color.BLACK) == Color.BLACK
         ) {
@@ -317,43 +344,5 @@ internal class RBTree<T : Comparable<T>> : Set<T> {
             val newNode = makeParent(oldNode, currentNode, newBrother)
             Pair(true, rotate(newNode, newBrother, oldNode.color, Color.BLACK))
         }
-    }
-
-    private data class InvariantsStats<T : Comparable<T>>(val blacks: Int, val min: T?, val max: T?, val color: Color)
-
-    private fun getTreeInvariantsStatsDFS(node: Node?): InvariantsStats<T>? {
-        if (node == null) {
-            return InvariantsStats(
-                blacks = 1,
-                min = null,
-                max = null,
-                color = Color.BLACK
-            )
-        }
-        val statsLeft = getTreeInvariantsStatsDFS(node.left)
-        val statsRight = getTreeInvariantsStatsDFS(node.right)
-
-        return if (
-            statsLeft == null
-            || statsRight == null
-            || (statsLeft.max != null && statsLeft.max >= node.value)
-            || (statsRight.min != null && statsRight.min <= node.value)
-            || (node.color == Color.RED && (statsLeft.color == Color.RED || statsRight.color == Color.RED))
-            || (statsLeft.blacks != statsRight.blacks)
-        ) {
-            null
-        } else {
-            InvariantsStats(
-                blacks = statsLeft.blacks + if (node.color == Color.BLACK) 1 else 0,
-                min = statsLeft.min ?: node.value,
-                max = statsRight.max ?: node.value,
-                color = node.color
-            )
-        }
-    }
-
-    fun checkTreeInvariantsSatisfied(): Boolean {
-        val stats = getTreeInvariantsStatsDFS(root)
-        return (stats != null) && (stats.color == Color.BLACK)
     }
 }

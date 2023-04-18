@@ -20,7 +20,6 @@ class TestAdd {
         assertTrue(tree.containsAll(listOf(5, 2)))
         assertFalse(tree.containsAll(listOf(5, 2, 1)))
         tree = tree.add(1)
-        assertTrue(tree.checkTreeInvariantsSatisfied())
         assertTrue(tree.containsAll(listOf(5, 2, 1)))
         assertFalse(tree.containsAll(listOf(5, 2, 1, 17)))
         tree = tree.add(17)
@@ -28,7 +27,6 @@ class TestAdd {
         assertFalse(tree.containsAll(listOf(5, 2, 1, 17, 99)))
         tree = tree.add(99)
         assertTrue(tree.containsAll(listOf(5, 2, 1, 17, 99)))
-        assertTrue(tree.checkTreeInvariantsSatisfied())
     }
 
     @Test
@@ -43,7 +41,6 @@ class TestAdd {
         assertTrue(tree.containsAll(listOf("5", "2")))
         assertFalse(tree.containsAll(listOf("5", "2", "1")))
         tree = tree.add("1")
-        assertTrue(tree.checkTreeInvariantsSatisfied())
         assertTrue(tree.containsAll(listOf("5", "2", "1")))
         assertFalse(tree.containsAll(listOf("5", "2", "1", "17")))
         tree = tree.add("17")
@@ -51,7 +48,6 @@ class TestAdd {
         assertFalse(tree.containsAll(listOf("5", "2", "1", "17", "99")))
         tree = tree.add("99")
         assertTrue(tree.containsAll(listOf("5", "2", "1", "17", "99")))
-        assertTrue(tree.checkTreeInvariantsSatisfied())
     }
 
     @Test
@@ -73,8 +69,6 @@ class TestAdd {
             val value = randomizer.nextInt()
             assertEquals(set.contains(value), tree.contains(value))
         }
-
-        assertTrue(tree.checkTreeInvariantsSatisfied())
     }
 
     @Test
@@ -96,8 +90,6 @@ class TestAdd {
             val value = randomizer.nextInt(-1000, 1000)
             assertEquals(set.contains(value), tree.contains(value))
         }
-
-        assertTrue(tree.checkTreeInvariantsSatisfied())
     }
 
 }
